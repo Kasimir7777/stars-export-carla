@@ -164,6 +164,14 @@ class CarlaDataGenerator:
             for actor in all_vehicle_actors:
                 traffic_manager.update_vehicle_lights(actor, True)
 
+        all_vehicle_actors = world.get_actors(vehicles_list)
+        for actor in all_vehicle_actors:
+            traffic_manager.ignore_lights_percentage(actor, args.ignore_red_lights_percentage)
+            traffic_manager.ignore_vehicles_percentage(actor, args.ignore_vehicles_percentage)
+
+        traffic_manager.global_percentage_speed_difference(args.global_percentage_speed_difference)
+
+
         # -------------
         # Spawn Walkers
         # -------------
@@ -247,7 +255,7 @@ class CarlaDataGenerator:
         print('spawned %d vehicles and %d walkers, press Ctrl+C to exit.' % (len(vehicles_list), len(walkers_list)))
 
         # Example of how to use Traffic Manager parameters
-        traffic_manager.global_percentage_speed_difference(30.0)
+        # traffic_manager.global_percentage_speed_difference(30.0)
 
         world.tick()
 
@@ -405,10 +413,31 @@ if __name__ == '__main__':
         default=5,
         type=float,
         help='Length of the run in minutes (default: 5')
+    argparser.add_argument(
+        '-irlp', '--ignore-red-lights-percentage',
+        metavar='IRLP',
+        default=15,
+        help='Set percentage for ignoring red lights (default: 0)'
+    )
+    argparser.add_argument(
+        '-gpsd', '--global-percentage-speed-difference',
+        metavar='GPSD',
+        default=-15,
+        help='Set percentage speed difference to the current speed limit (positive -> slower than limit, negative -> faster than limit, defailt = 30)'
+    )
+    argparser.add_argument(
+        '-ivp', '--ignore-vehicles-percentage',
+        metavar='IVP',
+        default=15,
+        help='Set percentage for ignoring other vehicles during collision detection phase (defailt = 0)'
+    )
 
     args = argparser.parse_args()
     print("Seed:", args.seed)
     random.seed(args.seed)
+    print("ignore traffic lights percentage: ", args.ignore_red_lights_percentage)
+    print("ignore vehicles percentage: ", args.ignore_vehicles_percentage)
+    print("global percentage speed difference: ", args.global_percentage_speed_difference)
     print("Connect to carla simulator")
     # Find carla simulator at localhost on port 2000
     client = carla.Client('localhost', 2000)
